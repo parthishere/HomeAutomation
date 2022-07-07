@@ -1,13 +1,10 @@
-#include <ESP8266WiFi.h>
-#include <ESP8266HTTPClient.h>
-#include <ESP8266WebServer.h>
-#include <EEPROM.h>
+
 #include "Fligree.h"
 
 #define max_timeout 100 // Second
- 
+
 //Variables
-int i = 0, pD0=0, pD1=1, pD2=2, pD3=3, pD4=4, pA0=34;
+int i = 0, pD0 = 0, pD1 = 1, pD2 = 2, pD3 = 3, pD4 = 4, pA0 = 34;
 String pin_D0, pin_D1, pin_D2, pin_D3, pin_D4, pin_A0;
 int statusCode;
 const char* ssid = "text";
@@ -21,21 +18,22 @@ String url = "http://192.168.0.102:8000/";
 String uqid = "";
 String username = "";
 String password = "";
- 
+
 //Function Decalration
 bool testWifi(String username, String password, String uqid);
 void launchWeb(void);
 void setupAP(void);
- 
+
 //Establishing Local server at port 80 whenever required
 ESP8266WebServer server(80);
-Fligree esp;
+Fligree esp(url);
 
 void setup()
 {
- 
+
   Serial.begin(115200); //Initialising if(DEBUG)Serial Monitor
   Serial.println();
+  
   Serial.println("Disconnecting previously connected WiFi");
   WiFi.disconnect();
   EEPROM.begin(512); //Initialasing EEPROM
@@ -46,84 +44,84 @@ void setup()
   Serial.println("Startup");
 
   Serial.println("Enter 1 for cleaing eeprom");
-  while (Serial.available() == 0 and millis() < max_timeout*100){
-    Serial.print("!"); 
+  while (Serial.available() == 0 and millis() < max_timeout * 100) {
+    Serial.print("!");
     delay(300);
-   }
+  }
   Serial.println("Debuging time over... ");
-   
+
   int IC = Serial.parseInt();
-  if (IC == 1){
+  if (IC == 1) {
     Serial.println("Clearing EEPROM");
     for (int i = 0; i < 256; ++i) {
-          EEPROM.write(i, 0);
-        }
+      EEPROM.write(i, 0);
+    }
     delay(10);
     Serial.println("Continue");
   }
-  else{
+  else {
     Serial.println("EEPROM isn't cleared !");
   }
- 
+
   //---------------------------------------- Read EEPROM for SSID and pass
-    Serial.println("Reading EEPROM ssid");
- 
-    String esid;
-    for (int i = 0; i < 32; ++i)
-    {
-      esid += char(EEPROM.read(i));
-    }
-    Serial.println();
-    Serial.print("SSID: ");
-    Serial.println(esid);
-    Serial.println("");
-    Serial.println("Reading EEPROM pass");
- 
-    String epass = "";
-    for (int i = 32; i < 96; ++i)
-    {
-      epass += char(EEPROM.read(i));
-    }
-    Serial.print("PASS: ");
-    Serial.println(epass);
-    Serial.println("");
-    Serial.println("Reading EEPROM USERNAME");
+  Serial.println("Reading EEPROM ssid");
+
+  String esid;
+  for (int i = 0; i < 32; ++i)
+  {
+    esid += char(EEPROM.read(i));
+  }
+  Serial.println();
+  Serial.print("SSID: ");
+  Serial.println(esid);
+  Serial.println("");
+  Serial.println("Reading EEPROM pass");
+
+  String epass = "";
+  for (int i = 32; i < 96; ++i)
+  {
+    epass += char(EEPROM.read(i));
+  }
+  Serial.print("PASS: ");
+  Serial.println(epass);
+  Serial.println("");
+  Serial.println("Reading EEPROM USERNAME");
 
 
-    for (int i = 96; i < 128; ++i){
-      username += char(EEPROM.read(i));
-    }
-    Serial.println();
-    Serial.print("USERNAME: ");
-    Serial.println(username);
-    Serial.println("");
-    Serial.println("Reading EEPROM PASSWORD");
+  for (int i = 96; i < 128; ++i) {
+    username += char(EEPROM.read(i));
+  }
+  Serial.println();
+  Serial.print("USERNAME: ");
+  Serial.println(username);
+  Serial.println("");
+  Serial.println("Reading EEPROM PASSWORD");
 
-    for (int i = 128; i < 192; ++i){
-      password += char(EEPROM.read(i));
-    }
-    Serial.println();
-    Serial.print("PASSWORD: ");
-    Serial.println(password);
-    Serial.println("");
-    Serial.println("Reading EEPROM UQID");
+  for (int i = 128; i < 192; ++i) {
+    password += char(EEPROM.read(i));
+  }
+  Serial.println();
+  Serial.print("PASSWORD: ");
+  Serial.println(password);
+  Serial.println("");
+  Serial.println("Reading EEPROM UQID");
 
-    for (int i = 192; i < 256; ++i){
-      uqid += char(EEPROM.read(i));
-    }
-    Serial.println();
-    Serial.print("UQID: ");
-    Serial.println(uqid);
-    Serial.println("");
+  for (int i = 192; i < 256; ++i) {
+    uqid += char(EEPROM.read(i));
+  }
+  Serial.println();
+  Serial.print("UQID: ");
+  Serial.println(uqid);
+  Serial.println("");
 
- 
- 
+
+
   WiFi.begin(esid.c_str(), epass.c_str());
   if (testWifi(uqid, username, password))
   {
     Serial.println("Succesfully Connected!!!");
-    esp.Begin(uqid, username, password);
-    
+    //    esp.Begin(uqid, username, password);
+
     return;
   }
   else
@@ -132,44 +130,44 @@ void setup()
     launchWeb();
     setupAP();// Setup HotSpot
   }
- 
+
   Serial.println();
   Serial.println("Waiting.");
-  
+
   while ((WiFi.status() != WL_CONNECTED))
   {
     Serial.print(".");
     delay(100);
     server.handleClient();
   }
- 
+
 }
 void loop() {
   if ((WiFi.status() == WL_CONNECTED))
   {
- 
+
     pin_D0 = String(digitalRead(D0));
     pin_D1 = String(digitalRead(D1));
     pin_D2 = String(digitalRead(D2));
     pin_D3 = String(digitalRead(D3));
     pin_D4 = String(digitalRead(D4));
-  
+
     pin_A0 = String(analogRead(A0));
-  
-    esp.GETData("home/");
+
+    esp.GETData(username, uqid, "home/");
     delay(5000);
-    esp.POSTData("home/", pin_D0, pin_D1, pin_D2, pin_D3, pin_D4, pin_A0);
+    esp.POSTData(username, password, uqid, "home/", pin_D0, pin_D1, pin_D2, pin_D3, pin_D4, pin_A0);
     delay(5000);
- 
+
   }
   else
   {
   }
- 
+
 }
- 
- 
-//-------- Fuctions used for WiFi credentials saving and connecting to it which you do not need to change 
+
+
+//-------- Fuctions used for WiFi credentials saving and connecting to it which you do not need to change
 bool testWifi(String username, String password, String uqid)
 {
   int c = 0;
@@ -177,7 +175,7 @@ bool testWifi(String username, String password, String uqid)
   while ( c < 20 ) {
     if (WiFi.status() == WL_CONNECTED)
     {
-      if (username.length() == 0 && password.length() == 0 && uqid.length() == 0){
+      if (username.length() == 0 && password.length() == 0 && uqid.length() == 0) {
         return false;
       }
       return true;
@@ -190,7 +188,7 @@ bool testWifi(String username, String password, String uqid)
   Serial.println("Connect timed out, opening AP");
   return false;
 }
- 
+
 void launchWeb()
 {
   Serial.println("");
@@ -205,7 +203,7 @@ void launchWeb()
   server.begin();
   Serial.println("Server started");
 }
- 
+
 void setupAP(void)
 {
   WiFi.mode(WIFI_STA);
@@ -241,7 +239,7 @@ void setupAP(void)
     st += WiFi.SSID(i);
     st += " (";
     st += WiFi.RSSI(i);
- 
+
     st += ")";
     st += (WiFi.encryptionType(i) == ENC_TYPE_NONE) ? " " : "*";
     st += "</li>";
@@ -253,12 +251,12 @@ void setupAP(void)
   launchWeb();
   Serial.println("over");
 }
- 
+
 void createWebServer()
 {
- {
+  {
     server.on("/", []() {
- 
+
       IPAddress ip = WiFi.softAPIP();
       String ipStr = String(ip[0]) + '.' + String(ip[1]) + '.' + String(ip[2]) + '.' + String(ip[3]);
       content = "<!DOCTYPE HTML>\r\n<html>Hello from ESP8266 at ";
@@ -274,11 +272,11 @@ void createWebServer()
       //setupAP();
       IPAddress ip = WiFi.softAPIP();
       String ipStr = String(ip[0]) + '.' + String(ip[1]) + '.' + String(ip[2]) + '.' + String(ip[3]);
- 
+
       content = "<!DOCTYPE HTML>\r\n<html>go back";
       server.send(200, "text/html", content);
     });
- 
+
     server.on("/setting", []() {
       String qsid = server.arg("ssid");
       String qpass = server.arg("pass");
@@ -297,7 +295,7 @@ void createWebServer()
         Serial.println("");
         Serial.println(uqid);
         Serial.println("");
- 
+
         Serial.println("writing eeprom ssid:");
         for (int i = 0; i < qsid.length(); ++i)
         {
@@ -338,8 +336,8 @@ void createWebServer()
         }
 
         EEPROM.commit();
-        
- 
+
+
         content = "{\"Success\":\"saved to eeprom... reset to boot into new wifi\"}";
         statusCode = 200;
         ESP.reset();
@@ -350,7 +348,7 @@ void createWebServer()
       }
       server.sendHeader("Access-Control-Allow-Origin", "*");
       server.send(statusCode, "application/json", content);
- 
+
     });
-  } 
+  }
 }
