@@ -1,7 +1,10 @@
-
 #include "Fligree.h"
 
 #define max_timeout 100 // Second
+
+#define url "http://192.168.0.102:8000/"
+#define ENDPOINT_GET "home/"
+#define ENDPOINT_POST "home/"
 
 //Variables
 int i = 0, pD0 = 0, pD1 = 1, pD2 = 2, pD3 = 3, pD4 = 4, pA0 = 34;
@@ -11,9 +14,9 @@ const char* ssid = "text";
 const char* passphrase = "text";
 String st;
 String content;
+String payload, code;
 
 
-String url = "http://192.168.0.102:8000/";
 
 String uqid = "";
 String username = "";
@@ -26,7 +29,7 @@ void setupAP(void);
 
 //Establishing Local server at port 80 whenever required
 ESP8266WebServer server(80);
-Fligree esp(url);
+Fligree esp;
 
 void setup()
 {
@@ -120,7 +123,7 @@ void setup()
   if (testWifi(uqid, username, password))
   {
     Serial.println("Succesfully Connected!!!");
-    //    esp.Begin(uqid, username, password);
+    esp.begin(url, username, password);
 
     return;
   }
@@ -154,10 +157,18 @@ void loop() {
 
     pin_A0 = String(analogRead(A0));
 
-    esp.GETData(username, uqid, "home/");
-    delay(5000);
-    esp.POSTData(username, password, uqid, "home/", pin_D0, pin_D1, pin_D2, pin_D3, pin_D4, pin_A0);
-    delay(5000);
+
+    payload, code = esp.GETData(uqid, ENDPOINT_GET);
+
+    Serial.print("GET DATA: ");
+    Serial.println(payload);
+    delay(2000);
+    payload, code = esp.POSTData(uqid, ENDPOINT_POST, pin_D0, pin_D1, pin_D2, pin_D3, pin_D4, pin_A0);
+    delay(2000);
+    Serial.print("POST DATA: ");
+    Serial.println(payload);
+
+    
 
   }
   else

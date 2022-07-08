@@ -16,15 +16,15 @@ class Fligree{
  
   public:
       
-    Fligree(String URL);
-
-    String GETData(String username, String uqid, String endpoint);
+    Fligree(void);
+    void begin(String url, String uname, String passwd);
+    String GETData(String uqid, String endpoint);
     
-    String POSTData(String username, String password, String uqid, String endpoint, String D0, String D1, String D2, String D3, String D4, String A0);
+    String POSTData(String uqid, String endpoint, String D0, String D1, String D2, String D3, String D4, String A0);
 
   private:
-    String payload, code, url, D0, D1, D2, D3, D4, A0, data_to_send, URI, URL;
-    String uqid, username, password;
+    String payload, code, url, D0, D1, D2, D3, D4, A0, data_to_send, URI, URL, uqid, username, password;
+    String httpRequestData;
     int httpCode;
 
 };
