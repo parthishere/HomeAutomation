@@ -1,10 +1,10 @@
 #include "Fligree.h"
 
-#define max_timeout 100 // Second
+#define max_timeout 50 // Second
 
-#define url "http://192.168.0.102:8000/"
-#define ENDPOINT_GET "home/"
-#define ENDPOINT_POST "home/"
+#define url "http://192.168.0.103:8000/"
+#define ENDPOINT_GET "api/get/"
+#define ENDPOINT_POST "api/post/"
 
 //Variables
 int i = 0, pD0 = 0, pD1 = 1, pD2 = 2, pD3 = 3, pD4 = 4, pA0 = 34;
@@ -88,13 +88,12 @@ void setup()
   Serial.print("PASS: ");
   Serial.println(epass);
   Serial.println("");
-  Serial.println("Reading EEPROM USERNAME");
+  Serial.println("Reading EEPROM username");
 
 
   for (int i = 96; i < 128; ++i) {
     username += char(EEPROM.read(i));
   }
-  Serial.println();
   Serial.print("USERNAME: ");
   Serial.println(username);
   Serial.println("");
@@ -103,7 +102,6 @@ void setup()
   for (int i = 128; i < 192; ++i) {
     password += char(EEPROM.read(i));
   }
-  Serial.println();
   Serial.print("PASSWORD: ");
   Serial.println(password);
   Serial.println("");
@@ -112,7 +110,7 @@ void setup()
   for (int i = 192; i < 256; ++i) {
     uqid += char(EEPROM.read(i));
   }
-  Serial.println();
+
   Serial.print("UQID: ");
   Serial.println(uqid);
   Serial.println("");
@@ -123,7 +121,7 @@ void setup()
   if (testWifi(uqid, username, password))
   {
     Serial.println("Succesfully Connected!!!");
-    esp.begin(url, username, password);
+    esp.begin(url, username, password, uqid);
 
     return;
   }
@@ -157,18 +155,19 @@ void loop() {
 
     pin_A0 = String(analogRead(A0));
 
-
-    payload, code = esp.GETData(uqid, ENDPOINT_GET);
-
-    Serial.print("GET DATA: ");
-    Serial.println(payload);
-    delay(2000);
-    payload, code = esp.POSTData(uqid, ENDPOINT_POST, pin_D0, pin_D1, pin_D2, pin_D3, pin_D4, pin_A0);
-    delay(2000);
-    Serial.print("POST DATA: ");
-    Serial.println(payload);
-
+    while (Serial.available() == 0);
     
+    int a = Serial.parseInt();
+    
+    if (a == 1){
+      payload, code = esp.GETData(ENDPOINT_GET);
+      
+      
+    }
+    else if (a == 2){
+      payload, code = esp.POSTData(ENDPOINT_POST, pin_D0, pin_D1, pin_D2, pin_D3, pin_D4, pin_A0);
+      
+    }
 
   }
   else
