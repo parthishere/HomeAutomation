@@ -10,10 +10,16 @@ void Fligree::begin(String url, String uname, String passwd, String uid){
   URL = String(url.c_str());
   username = String(uname.c_str());
   password = String(passwd.c_str());
-  uqid = uid;
+  
+  uqid = String(uid);
+  uqid.trim();  
+  uqid.replace(" ", "");
+  
+  
+  Serial.println("UQID in class:");
+  Serial.println(uqid);
 
 }
-
 
 
 String Fligree::GETData(String endpoint){
@@ -36,7 +42,6 @@ String Fligree::GETData(String endpoint){
       String payload = http.getString();
       code = "200";
       Serial.print("GET DATA: ");
-      Serial.println(payload);
       http.end();
     }
   } else {
@@ -45,7 +50,7 @@ String Fligree::GETData(String endpoint){
     http.end();
   } 
   Serial.println("");
-  return payload, code;
+  return payload;
 };
 
 

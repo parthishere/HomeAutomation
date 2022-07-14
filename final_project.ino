@@ -1,4 +1,6 @@
 #include "Fligree.h"
+#include <ArduinoJson.h>
+const size_t MAX_CONTENT_SIZE = 512; 
 
 #define max_timeout 50 // Second
 
@@ -16,7 +18,7 @@ String st;
 String content;
 String payload, code;
 
-
+char q;
 
 String uqid = "";
 String username = "";
@@ -26,6 +28,7 @@ String password = "";
 bool testWifi(String username, String password, String uqid);
 void launchWeb(void);
 void setupAP(void);
+void func(String payload);
 
 //Establishing Local server at port 80 whenever required
 ESP8266WebServer server(80);
@@ -107,7 +110,7 @@ void setup()
   Serial.println("");
   Serial.println("Reading EEPROM UQID");
 
-  for (int i = 192; i < 256; ++i) {
+  for (int i = 192; i < 224; ++i) {
     uqid += char(EEPROM.read(i));
   }
 
@@ -161,6 +164,9 @@ void loop() {
     
     if (a == 1){
       payload, code = esp.GETData(ENDPOINT_GET);
+      Serial.println(payload);
+      func(payload);
+      Serial.println("Func done");
       
       
     }
@@ -345,6 +351,8 @@ void createWebServer()
           Serial.println(uqid[i]);
         }
 
+
+
         EEPROM.commit();
 
 
@@ -361,4 +369,73 @@ void createWebServer()
 
     });
   }
+}
+
+
+
+
+void func(String payload){
+    const size_t capacity = JSON_ARRAY_SIZE(5) + 10*JSON_OBJECT_SIZE(3) + 490;
+    DynamicJsonBuffer jsonBuffer(capacity);
+    
+//    const char* json = "[{\"esp\":{\"id\":1,\"unique_id\":\"hsgusbbwi162bs\",\"timestamp\":\"2022-07-08T11:00:42.773325Z\"},\"name\":\"A0\",\"value\":0},{\"esp\":{\"id\":1,\"unique_id\":\"hsgusbbwi162bs\",\"timestamp\":\"2022-07-08T11:00:42.773325Z\"},\"name\":\"D3\",\"value\":0},{\"esp\":{\"id\":1,\"unique_id\":\"hsgusbbwi162bs\",\"timestamp\":\"2022-07-08T11:00:42.773325Z\"},\"name\":\"D4\",\"value\":0},{\"esp\":{\"id\":1,\"unique_id\":\"hsgusbbwi162bs\",\"timestamp\":\"2022-07-08T11:00:42.773325Z\"},\"name\":\"D2\",\"value\":0},{\"esp\":{\"id\":1,\"unique_id\":\"hsgusbbwi162bs\",\"timestamp\":\"2022-07-08T11:00:42.773325Z\"},\"name\":\"D0\",\"value\":0}]";
+    
+    JsonObject& root = jsonBuffer.parseObject(payload);
+
+    Serial.println("Root");
+    Serial.println(root.size());
+
+    for (JsonPair& kv : root) {
+    Serial.println(kv.key);
+    Serial.println(kv.value.as<char*>());
+    }
+    
+//    JsonObject& root_0 = root[0];
+//    JsonObject& root_0_esp = root_0["esp"];
+//    int root_0_esp_id = root_0_esp["id"]; // 1
+//    const char* root_0_esp_unique_id = root_0_esp["unique_id"]; // "hsgusbbwi162bs"
+//    const char* root_0_esp_timestamp = root_0_esp["timestamp"]; // "2022-07-08T11:00:42.773325Z"
+//    
+//    const char* root_0_name = root_0["name"]; // "A0"
+//    int root_0_value = root_0["value"]; // 0
+//    
+//    JsonObject& root_1 = root[1];
+//    
+//    JsonObject& root_1_esp = root_1["esp"];
+//    int root_1_esp_id = root_1_esp["id"]; // 1
+//    const char* root_1_esp_unique_id = root_1_esp["unique_id"]; // "hsgusbbwi162bs"
+//    const char* root_1_esp_timestamp = root_1_esp["timestamp"]; // "2022-07-08T11:00:42.773325Z"
+//    
+//    const char* root_1_name = root_1["name"]; // "D3"
+//    int root_1_value = root_1["value"]; // 0
+//    
+//    JsonObject& root_2 = root[2];
+//    
+//    JsonObject& root_2_esp = root_2["esp"];
+//    int root_2_esp_id = root_2_esp["id"]; // 1
+//    const char* root_2_esp_unique_id = root_2_esp["unique_id"]; // "hsgusbbwi162bs"
+//    const char* root_2_esp_timestamp = root_2_esp["timestamp"]; // "2022-07-08T11:00:42.773325Z"
+//    
+//    const char* root_2_name = root_2["name"]; // "D4"
+//    int root_2_value = root_2["value"]; // 0
+//    
+//    JsonObject& root_3 = root[3];
+//
+//    JsonObject& root_3_esp = root_3["esp"];
+//    int root_3_esp_id = root_3_esp["id"]; // 1
+//    const char* root_3_esp_unique_id = root_3_esp["unique_id"]; // "hsgusbbwi162bs"
+//    const char* root_3_esp_timestamp = root_3_esp["timestamp"]; // "2022-07-08T11:00:42.773325Z"
+//    
+//    const char* root_3_name = root_3["name"]; // "D2"
+//    int root_3_value = root_3["value"]; // 0
+//    
+//    JsonObject& root_4 = root[4];
+//    
+//    JsonObject& root_4_esp = root_4["esp"];
+//    int root_4_esp_id = root_4_esp["id"]; // 1
+//    const char* root_4_esp_unique_id = root_4_esp["unique_id"]; // "hsgusbbwi162bs"
+//    const char* root_4_esp_timestamp = root_4_esp["timestamp"]; // "2022-07-08T11:00:42.773325Z"
+//    
+//    const char* root_4_name = root_4["name"]; // "D0"
+//    int root_4_value = root_4["value"]; // 0
 }
