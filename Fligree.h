@@ -18,7 +18,7 @@ class Fligree{
       
     Fligree(void);
     void begin(String url, String uname, String passwd, String uid);
-    String GETData(String endpoint);
+    String  GETData(String endpoint);
     
     String POSTData(String endpoint, String D0, String D1, String D2, String D3, String D4, String A0);
 
